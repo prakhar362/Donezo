@@ -1,24 +1,33 @@
 const express = require("express");
-const cors = require("cors");
-const dotenv = require("dotenv");
+require("dotenv").config(); // Load environment variables
+const mongoose = require("mongoose");
 
-// Initialize app
+
 const app = express();
-dotenv.config(); 
+// Middleware to parse JSON requests
+app.use(express.json());
 
-// Middleware
-app.use(cors()); // Enable CORS
-app.use(express.json()); 
+// Attach routers to their respective base routes
+//app.use("/api/v1/user", userRouter);
 
-// Test route
-app.get("/", (req, res) => {
-  res.send("Server is running!");
+const port =  process.env.PORT || 4000; // Define the port number
+async function main()
+{
+    try{
+        //using dotenv
+    const mongourl=process.env.MONGO_URL;
+    await mongoose.connect(mongourl);
+    // Start the server
+    console.log("conneted to MongoDb Server")
+ app.listen(port, () => {
+    console.log(`Server running at http://localhost:${port}`);
 });
-
-// Port setup
-const PORT = process.env.PORT || 5000; 
-
-// Start the server
-app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
-});
+    }
+    catch(error)
+    {
+        console.error("Error connecting to MongoDB:", error.message);
+    process.exit(1); // Exit the process if the DB connection fails
+    }
+    
+}
+main();
