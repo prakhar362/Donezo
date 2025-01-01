@@ -16,6 +16,11 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs";
+import axios from "axios"; // Import axios
+
+const API = axios.create({
+  baseURL: "http://localhost:5000", // Ensure your backend is running at this address
+});
 
 function AuthPage() {
   const [activeTab, setActiveTab] = useState("signin");
@@ -28,22 +33,37 @@ function AuthPage() {
     userEmail: "",
     password: "",
   });
+  const [errorMessage, setErrorMessage] = useState("");
 
   function handleTabChange(value) {
     setActiveTab(value);
+    setErrorMessage(""); // Clear error message when tab changes
   }
 
-  function handleSignIn() {
-    // Handle Sign In logic here (API call)
-    console.log("Sign In: ", signInFormData);
+  async function handleSignIn() {
+    setErrorMessage(""); // Reset error message before API call
+    try {
+      const response = await API.post("/api/v1/user/signin", signInFormData);
+      console.log("Sign In Response:", response.data);
+      // Save JWT to localStorage or context if needed
+      localStorage.setItem("authToken", response.data.token);
+      // Redirect to a protected page after successful sign-in (e.g., Dashboard)
+    } catch (error) {
+      setErrorMessage(error.response?.data?.message || "Sign In failed");
+    }
   }
 
-  function handleSignUp() {
-    // Handle Sign Up logic here (API call)
-    console.log("Sign Up: ", signUpFormData);
+  async function handleSignUp() {
+    setErrorMessage(""); // Reset error message before API call
+    try {
+      const response = await API.post("/api/v1/user/signup", signUpFormData);
+      console.log("Sign Up Response:", response.data);
+      // Redirect to sign-in page after successful sign-up or auto-login
+    } catch (error) {
+      setErrorMessage(error.response?.data?.message || "Sign Up failed");
+    }
   }
 
-  // Check if all fields are filled in for Sign In form
   function checkIfSignInFormIsValid() {
     return (
       signInFormData &&
@@ -52,7 +72,6 @@ function AuthPage() {
     );
   }
 
-  // Check if all fields are filled in for Sign Up form
   function checkIfSignUpFormIsValid() {
     return (
       signUpFormData &&
@@ -117,6 +136,9 @@ function AuthPage() {
                   />
                 </div>
               </CardContent>
+              {errorMessage && (
+                <div className="text-red-500 text-sm">{errorMessage}</div>
+              )}
               <CardFooter>
                 <Button
                   onClick={handleSignIn}
@@ -185,6 +207,9 @@ function AuthPage() {
                   />
                 </div>
               </CardContent>
+              {errorMessage && (
+                <div className="text-red-500 text-sm">{errorMessage}</div>
+              )}
               <CardFooter>
                 <Button
                   onClick={handleSignUp}
